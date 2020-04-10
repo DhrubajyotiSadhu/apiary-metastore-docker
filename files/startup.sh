@@ -26,7 +26,7 @@ if [[ -n $RANGER_POLICY_MANAGER_URL ]]; then
     update_property.py ranger.plugin.hive.policy.rest.url ${RANGER_POLICY_MANAGER_URL} /etc/hive/conf/ranger-hive-security.xml
     update_property.py ranger.plugin.hive.service.name ${RANGER_SERVICE_NAME} /etc/hive/conf/ranger-hive-security.xml
 fi
-#enable ranger auditing
+#enable ranger solr auditing
 if [[ -n $RANGER_AUDIT_SOLR_URL ]]; then
     update_property.py xasecure.audit.is.enabled true /etc/hive/conf/ranger-hive-audit.xml
     update_property.py xasecure.audit.solr.is.enabled true /etc/hive/conf/ranger-hive-audit.xml
@@ -36,6 +36,12 @@ if [[ -n $RANGER_AUDIT_SOLR_URL ]]; then
     elif [ "$HIVE_METASTORE_ACCESS_MODE" = "readonly" ]; then
         update_property.py ranger.plugin.hive.policy.source.impl "com.expediagroup.apiary.extensions.rangerauth.policyproviders.ApiaryRangerAuthAllAccessPolicyProvider" /etc/hive/conf/ranger-hive-security.xml
     fi
+fi
+#enable ranger kafka auditing
+if [[ ! -z $KAFKA_BOOTSTRAP_SERVERS ]]; then
+    update_property.py xasecure.audit.is.enabled true /etc/hive/conf/ranger-hive-audit.xml
+    update_property.py xasecure.audit.kafka.is.enabled true /etc/hive/conf/ranger-hive-audit.xml
+    update_property.py xasecure.audit.kafka.broker_list ${KAFKA_BOOTSTRAP_SERVERS} /etc/hive/conf/ranger-hive-audit.xml
 fi
 #enable ranger db auditing
 if [[ -n $RANGER_AUDIT_DB_URL ]]; then

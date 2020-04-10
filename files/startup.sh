@@ -25,17 +25,17 @@ if [[ -n $RANGER_POLICY_MANAGER_URL ]]; then
     export METASTORE_PRELISTENERS="${METASTORE_PRELISTENERS},com.expediagroup.apiary.extensions.rangerauth.listener.ApiaryRangerAuthPreEventListener"
     update_property.py ranger.plugin.hive.policy.rest.url ${RANGER_POLICY_MANAGER_URL} /etc/hive/conf/ranger-hive-security.xml
     update_property.py ranger.plugin.hive.service.name ${RANGER_SERVICE_NAME} /etc/hive/conf/ranger-hive-security.xml
+    if [ "$HIVE_METASTORE_ACCESS_MODE" = "readwrite" ]; then
+        update_property.py ranger.plugin.hive.policy.source.impl "org.apache.ranger.admin.client.RangerAdminRESTClient" /etc/hive/conf/ranger-hive-security.xml
+    elif [ "$HIVE_METASTORE_ACCESS_MODE" = "readonly" ]; then
+        update_property.py ranger.plugin.hive.policy.source.impl "com.expediagroup.apiary.extensions.rangerauth.policyproviders.ApiaryRangerAuthAllAccessPolicyProvider" /etc/hive/conf/ranger-hive-security.xml
+    fi
 fi
 #enable ranger solr auditing
 if [[ -n $RANGER_AUDIT_SOLR_URL ]]; then
     update_property.py xasecure.audit.is.enabled true /etc/hive/conf/ranger-hive-audit.xml
     update_property.py xasecure.audit.solr.is.enabled true /etc/hive/conf/ranger-hive-audit.xml
     update_property.py xasecure.audit.solr.solr_url ${RANGER_AUDIT_SOLR_URL} /etc/hive/conf/ranger-hive-audit.xml
-    if [ "$HIVE_METASTORE_ACCESS_MODE" = "readwrite" ]; then
-        update_property.py ranger.plugin.hive.policy.source.impl "org.apache.ranger.admin.client.RangerAdminRESTClient" /etc/hive/conf/ranger-hive-security.xml
-    elif [ "$HIVE_METASTORE_ACCESS_MODE" = "readonly" ]; then
-        update_property.py ranger.plugin.hive.policy.source.impl "com.expediagroup.apiary.extensions.rangerauth.policyproviders.ApiaryRangerAuthAllAccessPolicyProvider" /etc/hive/conf/ranger-hive-security.xml
-    fi
 fi
 #enable ranger kafka auditing
 if [[ ! -z $KAFKA_BOOTSTRAP_SERVERS ]]; then
@@ -50,11 +50,6 @@ if [[ -n $RANGER_AUDIT_DB_URL ]]; then
     update_property.py xasecure.audit.jpa.javax.persistence.jdbc.url ${RANGER_AUDIT_DB_URL} /etc/hive/conf/ranger-hive-audit.xml
     update_property.py xasecure.audit.jpa.javax.persistence.jdbc.user "$(aws secretsmanager get-secret-value --secret-id ${RANGER_AUDIT_SECRET_ARN}|jq .SecretString -r|jq .username -r)" /etc/hive/conf/ranger-hive-audit.xml
     update_property.py xasecure.audit.jpa.javax.persistence.jdbc.password "$(aws secretsmanager get-secret-value --secret-id ${RANGER_AUDIT_SECRET_ARN}|jq .SecretString -r|jq .password -r)" /etc/hive/conf/ranger-hive-audit.xml
-    if [ "$HIVE_METASTORE_ACCESS_MODE" = "readwrite" ]; then
-        update_property.py ranger.plugin.hive.policy.source.impl "org.apache.ranger.admin.client.RangerAdminRESTClient" /etc/hive/conf/ranger-hive-security.xml
-    elif [ "$HIVE_METASTORE_ACCESS_MODE" = "readonly" ]; then
-        update_property.py ranger.plugin.hive.policy.source.impl "com.expediagroup.apiary.extensions.rangerauth.policyproviders.ApiaryRangerAuthAllAccessPolicyProvider" /etc/hive/conf/ranger-hive-security.xml
-    fi
 fi
 
 if [ -n "$ENABLE_METRICS" ]; then
